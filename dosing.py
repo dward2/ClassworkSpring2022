@@ -6,7 +6,7 @@
 """
 
 
-def input_data():
+def get_user_input_of_diagnosis():
     print("Day One Dosing Guidelines")
     print("")
     print("Choose diagnosis:")
@@ -14,23 +14,50 @@ def input_data():
     print("2 - Acute bacterial sinusitis")
     print("3 - Community-acquired pneumonia")
     print("4 - Pharyngitis/tonsilitis")
-    diagnosis = int(input("Enter a number: "))
+    entry = input("Enter a number: ")
+    return entry
+
+    
+def check_diagnosis_input(entry):
+    try:
+        diagnosis = int(entry)
+    except ValueError:
+        print("Must enter a number.")
+        return False
+    if diagnosis < 1 or diagnosis > 4:
+        print("Entry must be between 1 and 4.")
+        return False
+    return diagnosis
+
+    
+def get_patient_weight():
     print("PATIENT WEIGHT")
     print("Enter patient weight followed by units of kg or lb.")
     print("Examples:  65.3 lb      21.0 kg")
     weight_input = input("Enter weight: ")
-    return weight_input, diagnosis
+    return weight_input
     
-def analysis(weight_input, diagnosis):
+    
+def convert_lbs_to_kgs(weight_lbs):
+    weight_kgs = weight_lbs / 2.205
+    return weight_kgs
+
+
+def parse_weight_input(weight_input):
     weight_data = weight_input.split(" ")
     weight = float(weight_data[0])
     units = weight_data[1]
     if units == "lb":
-        weight = weight / 2.205
+        weight - convert_lbs_to_kgs(weight)
+    return weight
+
+
+def analysis(weight, diagnosis):
     dosages_mg_per_kg = [30, 10, 10, 12]
     dosage_mg_per_kg = dosages_mg_per_kg[diagnosis-1]
     dosage_mg_first_day = weight * dosage_mg_per_kg
-    return weight, dosage_mg_first_day
+    return dosage_mg_first_day
+
     
 def output(weight, dosage_mg_first_day):
     print("CORRECT DOSAGE")
@@ -39,8 +66,18 @@ def output(weight, dosage_mg_first_day):
           .format(dosage_mg_first_day))
 
 
-if __name__ == '__main__':
-    weight_input, diagnosis = input_data()
-    weight, dosage_first_day = analysis(weight_input,diagnosis)
-    output(weight, dosage_first_day)
+def program_driver():
+    good_entry = False
+    while not good_entry:
+        diagnosis_entry = get_user_input_of_diagnosis()
+        diagnosis = check_diagnosis_input(diagnosis_entry)
+        if diagnosis != False:
+            good_entry = True
+    weight_input = get_patient_weight()
+    weight = parse_weight_input(weight_input)
+    dosage_first_day_mg = analysis(weight, diagnosis)
+    output(weight, dosage_first_day_mg)
 
+
+if __name__ == '__main__':
+    program_driver()
