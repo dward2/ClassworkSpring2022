@@ -1,4 +1,6 @@
-print("This is the blood_calculator module and python calls it {}".format(__name__))
+print("This is the blood_calculator module and python"
+      " calls it {}".format(__name__))
+
 
 def interface():
     print("Blood Test Analysis v1.1")
