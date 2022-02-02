@@ -17,7 +17,7 @@ def get_user_input_of_diagnosis():
     entry = input("Enter a number: ")
     return entry
 
-    
+
 def check_diagnosis_input(entry):
     try:
         diagnosis = int(entry)
@@ -29,15 +29,15 @@ def check_diagnosis_input(entry):
         return False
     return diagnosis
 
-    
+
 def get_patient_weight():
     print("PATIENT WEIGHT")
     print("Enter patient weight followed by units of kg or lb.")
     print("Examples:  65.3 lb      21.0 kg")
     weight_input = input("Enter weight: ")
     return weight_input
-    
-    
+
+
 def convert_lbs_to_kgs(weight_lbs):
     weight_kgs = weight_lbs / 2.205
     return weight_kgs
@@ -58,7 +58,7 @@ def analysis(weight, diagnosis):
     dosage_mg_first_day = weight * dosage_mg_per_kg
     return dosage_mg_first_day
 
-    
+
 def output(weight, dosage_mg_first_day):
     print("CORRECT DOSAGE")
     print("For a patient weighing {:.1f} kg,".format(weight))
@@ -71,7 +71,7 @@ def program_driver():
     while not good_entry:
         diagnosis_entry = get_user_input_of_diagnosis()
         diagnosis = check_diagnosis_input(diagnosis_entry)
-        if diagnosis != False:
+        if diagnosis is not False:
             good_entry = True
     weight_input = get_patient_weight()
     weight = parse_weight_input(weight_input)
