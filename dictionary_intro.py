@@ -5,11 +5,11 @@ def create_dictionary():
     return x
 
 
-def add_to_dictionary(in_dictionary, new_word, 
+def add_to_dictionary(in_dictionary, new_word,
                       new_definition):
     in_dictionary[new_word] = new_definition
-    
-    
+
+
 def output_dictionary(in_dictionary):
     print(type(in_dictionary))
     print(in_dictionary)
@@ -18,17 +18,15 @@ def output_dictionary(in_dictionary):
     print(in_dictionary.keys())
     print(in_dictionary.values())
     print(in_dictionary.count)
-    
+
 
 def get_definition(in_dictionary, word):
     another_way = in_dictionary.get(word)
     print(another_way)
     definition = in_dictionary[word]
     return definition
-    
-    
-    
+
+
 if __name__ == "__main__":
     my_dictionary = create_dictionary()
     output_dictionary(my_dictionary)
-    

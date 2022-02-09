@@ -6,33 +6,32 @@ class Patient:
         self.age = age
         self.tests = []
         self.dob = dob
-        
+
     def __repr__(self):
         return "Patient: {},{}".format(self.name, self.id)
-        
+
     def output_patient(self):
         outstring = "Name: {}\n".format(self.name)
         outstring += "Id: {}\n".format(self.id)
         outstring += "Age: {}\n".format(self.age)
         outstring += "Tests {}\n".format(self.tests)
         return outstring
-        
+
     def is_adult_or_minor(self):
         if self.age >= 18:
             return "Adult"
         else:
             return "Minor"
-            
+
     def id_tag_string(self):
         return "{}: {}".format(self.name, self.id)
-    
+
     def add_test(self, test_name, test_result):
         self.tests.append((test_name, test_result))
-        
-    def increase_age(self,number_of_years):
+
+    def increase_age(self, number_of_years):
         self.age += number_of_years
-        
-        
+
 
 def add_patient(patient_name, patient_id, age, dob=None):
     new_patient = Patient(patient_name, patient_id, age, dob)
@@ -54,16 +53,13 @@ def main():
     print(found_patient.output_patient())
     # output_database(db)
     add_test_to_patient(db, 111, "HDL", 100)
-    #output_database(db)
+    # output_database(db)
     return db
-    
-    
+
+
 def output_database(db):
     for patient in db:
         output_patient(patient)
-
-
-
 
 
 def find_patient(db, id_no):
@@ -96,5 +92,3 @@ if __name__ == "__main__":
     db = main()
     print_directory(db)
 #    print(create_id_tag_string(find_patient(db, 111)))
-
-
