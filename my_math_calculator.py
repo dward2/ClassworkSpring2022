@@ -4,6 +4,12 @@ def sqrt(n):
     # initial approximation This
     # can definitely be improved
 
+    if type(n) is str:
+        raise TypeError("Cannot send a string")
+
+    if n < 0:
+        raise ValueError("{} is a negative number which is not allowed.".format(n))
+
     x = n
     y = 1
 
