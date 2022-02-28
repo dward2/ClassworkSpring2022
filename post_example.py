@@ -10,4 +10,3 @@ import requests
 
 r = requests.get("http://vcm-21170.vm.duke.edu:5000/list")
 print(r.text)
-
