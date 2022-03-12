@@ -1,10 +1,3 @@
-"""
-    {"name": <name_string>,
-    "id": <id_int>,
-    "blood_type": <string>,
-    "tests": <dictionary>
-
-"""
 import logging
 from flask import Flask, request, jsonify
 
