@@ -10,9 +10,13 @@ import pytest
     ({"name": "David", "id": "2", "blood_type": "O+"}, 400),
     (["David", 1, "O+"], 400)
 ])
-def test_validate_new_patient_input(input_dictionary, expected):
-    from health_db_server import validate_new_patient_input
-    answer, status_code = validate_new_patient_input(input_dictionary)
+def test_validate_server_input(input_dictionary, expected):
+    from health_db_server import validate_server_input
+    expected_keys = ["name", "id", "blood_type"]
+    expected_types = [str, int, str]
+    answer, status_code = validate_server_input(input_dictionary,
+                                                expected_keys,
+                                                expected_types)
     assert status_code == expected
 
 
@@ -78,3 +82,36 @@ def test_get_results_driver(new_patient_id, search_id_string, expected_code):
         add_patient_to_db("Test Patient Name", new_patient_id, "O+")
     answer, status_code = get_results_driver(search_id_string)
     assert status_code, expected_code
+
+
+@pytest.mark.parametrize("new_patient_id, patient_id_int, test_name,"
+                         "test_result, expected_code", [
+                          (345, 345, "HDL", 50, 200),
+                          (None, 345, "LDL", 40, 200),
+                          (None, 345, "HDL", 51, 200),
+                          (None, 3456, "HDL", 50, 400),
+                         ])
+def test_add_test_to_patient(new_patient_id, patient_id_int, test_name,
+                             test_result, expected_code):
+    from health_db_server import add_test_to_patient, add_patient_to_db
+    if new_patient_id is not None:
+        add_patient_to_db("Test Patient Name", new_patient_id, "O+")
+    test_data = {"id": patient_id_int, "test_name": test_name,
+                 "test_result": test_result}
+    answer, status_code = add_test_to_patient(test_data)
+    assert status_code == expected_code
+
+
+@pytest.mark.parametrize("new_patient_id, test_data, expected_code", [
+    (345, {"id": 345, "test_name": "HDL", "test_result": 50}, 200),
+    (None, {"ixd": 345, "test_name": "HDL", "test_result": 50}, 400),
+    (None, {"id": "junk", "test_name": "HDL", "test_result": 50}, 400),
+    (None, {"id": 345, "test_name": "HDL", "test_result": 51}, 200),
+    (None, {"id": 3456, "test_name": "HDL", "test_result": 50}, 400),
+])
+def test_add_test_driver(new_patient_id, test_data, expected_code):
+    from health_db_server import add_test_driver, add_patient_to_db
+    if new_patient_id is not None:
+        add_patient_to_db("Test Patient Name", new_patient_id, "O+")
+    answer, status_code = add_test_driver(test_data)
+    assert status_code == expected_code

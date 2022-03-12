@@ -84,7 +84,10 @@ def new_patient_driver(in_data):
                   database or error message if not, followed by a status code
     """
 
-    answer, status_code = validate_new_patient_input(in_data)
+    expected_keys = ["name", "id", "blood_type"]
+    expected_types = [str, int, str]
+    answer, status_code = validate_server_input(in_data, expected_keys,
+                                                expected_types)
     if status_code != 200:
         return answer, status_code
     add_patient_to_db(in_data["name"], in_data["id"], in_data["blood_type"])
@@ -92,18 +95,22 @@ def new_patient_driver(in_data):
     return True, 200
 
 
-def validate_new_patient_input(in_data):
-    """Validates that input data to the /new_patient route contains a
-    dictionary with the correct keys and data types
+def validate_server_input(in_data, expected_keys, expected_types):
+    """Validates that input data to server contains a dictionary with the
+    correct keys and data types
 
-    The /new_patient route for this server is a POST request that should
-    receive a JSON-encoded string which contains dictionaries.  To avoid server
-    errors, this function checks that the input data is a dictionary, that it
-    has the specified keys, and specified data types.
+    Various routes for this server are POST requests that receive JSON-encoded
+    strings which should contain dictionaries.  To avoid server errors, this
+    function checks that the input data is a dictionary, that it has the
+    specified keys, and specified data types.
 
     Args:
         in_data (any type): the input data that has been deserialized from a
-        JSON string.  Ideally, it is a dictionary.
+            JSON string.  Ideally, it is a dictionary.
+        expected_keys (list): a list of the needed keys in the input dictionary
+        expected_types(list): a list of the types for each value in the
+            dictionary, in the same order as their corresponding key in
+            expected_keys
 
     Returns:
         str or bool , int: returns True, 200 if data validation is successful.
@@ -112,8 +119,6 @@ def validate_new_patient_input(in_data):
     """
     if type(in_data) is not dict:
         return "The input was not a dictionary.", 400
-    expected_keys = ["name", "id", "blood_type"]
-    expected_types = [str, int, str]
     for key, expected_type in zip(expected_keys, expected_types):
         if key not in in_data:
             error_message = "Key {} is missing".format(key)
@@ -139,7 +144,7 @@ def add_patient_to_db(patient_name, id_no, blood_type):
          "tests": <dictionary>}
     The "tests" dictionary will look like this:
         {"test_name1": [test_result1, test_result2, etc.],
-         "test_name2": [teset_result3, test_result4, etc.],
+         "test_name2": [test_result3, test_result4, etc.],
          etc. }
 
     Args:
@@ -258,7 +263,7 @@ def add_test_handler():
     {"id": int, "test_name": str, "test_result": int}
 
     The function then calls a driver function that implements the test
-    addition.  The result and status code from that driver funcdtion are then
+    addition.  The result and status code from that driver function are then
     returned.
 
     Returns:
@@ -274,7 +279,7 @@ def add_test_handler():
 def add_test_driver(in_data):
     """Adds a new test result to a patient record in the server database
 
-    This funciton implements the functionality of the /add_test route.  The
+    This function implements the functionality of the /add_test route.  The
     input parameter should be a dictionary with the following format:
 
     {"id": int, "test_name": str, "test_result": int}
@@ -290,7 +295,10 @@ def add_test_driver(in_data):
         str, int: message saying test data successfully added to the
                   database or error message if not, followed by a status code
     """
-    answer, status_code = validate_add_test_input(in_data)
+    expected_keys = ["id", "test_name", "test_result"]
+    expected_types = [int, str, int]
+    answer, status_code = validate_server_input(in_data, expected_keys,
+                                                expected_types)
     if status_code != 200:
         return answer, status_code
     answer, status_code = add_test_to_patient(in_data)
@@ -298,30 +306,14 @@ def add_test_driver(in_data):
     return answer, status_code
 
 
-def validate_add_test_input(in_data):
-    if type(in_data) is not dict:
-        return "The input was not a dictionary.", 400
-    expected_keys = ["id", "test_name", "test_result"]
-    expected_types = [int, str, int]
-    for key, expected_type in zip(expected_keys, expected_types):
-        if key not in in_data:
-            error_message = "Key {} is missing".format(key)
-            return error_message, 400
-        if type(in_data[key]) is not expected_type:
-            error_message = "Value of key {} is not of type {}"\
-                .format(key, expected_type)
-            return error_message, 400
-    return True, 200
-
-
 def add_test_to_patient(in_data):
     """ Finds the specified patient and adds a new test result to the patient
     record
 
     The function calls another function that finds the specified patient and
-    returns the tests dictionary for that patient if the patient exists.
+    returns the "tests" dictionary for that patient if the patient exists.
     If the patient does not exist, a status code of 400 is returned and this
-    function returns the error message and status code.  It the patient did
+    function returns the error message and status code.  If the patient did
     exist, the function checks to see if the test_name already exists as a key
     in the "tests" dictionary.  If so, it appends the sent test_result to the
     list associated with the key.  If not, a new key is created using the test
@@ -333,7 +325,7 @@ def add_test_to_patient(in_data):
             and the test result.
 
     Returns:
-        str, int: a successs or error message, status code
+        str, int: a success or error message, status code
 
     """
     tests, status_code = get_patient_tests_from_database(in_data["id"])
