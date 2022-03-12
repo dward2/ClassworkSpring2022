@@ -5,7 +5,7 @@
     "tests": <dictionary>
 
 """
-
+import logging
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -21,9 +21,21 @@ def add_patient_to_db(name, id, blood_type):
 
 
 def init_server():
+    """ Initializes server conditions
+
+    This function initializes the server log and can be used for any other
+    tasks that you would like to run upon initial server start-up.  For
+    example, it currently adds two patients to the database so that there is
+    content in the database for testing.  Also, in the future, when an external
+    database is utilized, the connect to that external database can be
+    establish here.
+
+    Note:  As currently written, this function does not need a unit test as
+    it does not do any data manipulation itself.
+    """
     add_patient_to_db("Ann Ables", 101, "A+")
     add_patient_to_db("Bob Boyles", 202, "B-")
-    # start logging funcionality
+    logging.basicConfig(filename="health_db_server.log", level=logging.DEBUG)
 
 
 @app.route("/add_patient", methods=["POST"])
@@ -61,6 +73,11 @@ def validate_add_patient_input(in_data):
 
 @app.route("/get_results/<patient_id>", methods=["GET"])
 def get_results(patient_id):
+    answer, status_code = get_results_driver(patient_id)
+    return answer, status_code
+
+
+def get_results_driver(patient_id):
     answer, status_code = validate_patient_id(patient_id)
     if status_code != 200:
         return answer, status_code
@@ -80,6 +97,5 @@ def validate_patient_id(patient_id):
 
 if __name__ == '__main__':
     init_server()
-    answer, status_code = get_results("101")
     app.run()
 
