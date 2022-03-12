@@ -23,7 +23,8 @@ def init_server():
     """
     add_patient_to_db("Ann Ables", 101, "A+")
     add_patient_to_db("Bob Boyles", 202, "B-")
-    logging.basicConfig(filename="health_db_server.log", level=logging.DEBUG)
+    logging.basicConfig(filename="health_db_server.log", level=logging.DEBUG,
+                        filemode='w')
 
 
 @app.route("/new_patient", methods=["POST"])
@@ -136,6 +137,10 @@ def add_patient_to_db(patient_name, id_no, blood_type):
          "id": <id_int>,
          "blood_type": <string>,
          "tests": <dictionary>}
+    The "tests" dictionary will look like this:
+        {"test_name1": [test_result1, test_result2, etc.],
+         "test_name2": [teset_result3, test_result4, etc.],
+         etc. }
 
     Args:
         patient_name (str): name of patient
@@ -240,6 +245,106 @@ def get_patient_tests_from_database(patient_id):
         if patient["id"] == int(patient_id):
             return patient["tests"], 200
     return "Patient_id {} was not found".format(patient_id), 400
+
+
+@app.route("/add_test", methods=["POST"])
+def add_test_handler():
+    """Implements /add_test route for adding a new test result to a patient
+    record in the server database
+
+    The /add_test route is a POST request that should receive a JSON-encoded
+    string with the following format:
+
+    {"id": int, "test_name": str, "test_result": int}
+
+    The function then calls a driver function that implements the test
+    addition.  The result and status code from that driver funcdtion are then
+    returned.
+
+    Returns:
+        str, int: message saying test data successfully added to the
+                  database or error message if not, followed by a status code
+    """
+
+    in_data = request.get_json()
+    answer, status_code = add_test_driver(in_data)
+    return jsonify(answer), status_code
+
+
+def add_test_driver(in_data):
+    """Adds a new test result to a patient record in the server database
+
+    This funciton implements the functionality of the /add_test route.  The
+    input parameter should be a dictionary with the following format:
+
+    {"id": int, "test_name": str, "test_result": int}
+
+    The function first calls a validation function to ensure that the needed
+    keys and data types exist in the dictionary.  If that validation passes,
+    another function is then called to find and add the test results to the
+    patient record.  The second function returns a status code of 200 and a
+    success message, or a status code of 400 and an error message if the
+    patient id did not exist.
+
+    Returns:
+        str, int: message saying test data successfully added to the
+                  database or error message if not, followed by a status code
+    """
+    answer, status_code = validate_add_test_input(in_data)
+    if status_code != 200:
+        return answer, status_code
+    answer, status_code = add_test_to_patient(in_data)
+    print(db)
+    return answer, status_code
+
+
+def validate_add_test_input(in_data):
+    if type(in_data) is not dict:
+        return "The input was not a dictionary.", 400
+    expected_keys = ["id", "test_name", "test_result"]
+    expected_types = [int, str, int]
+    for key, expected_type in zip(expected_keys, expected_types):
+        if key not in in_data:
+            error_message = "Key {} is missing".format(key)
+            return error_message, 400
+        if type(in_data[key]) is not expected_type:
+            error_message = "Value of key {} is not of type {}"\
+                .format(key, expected_type)
+            return error_message, 400
+    return True, 200
+
+
+def add_test_to_patient(in_data):
+    """ Finds the specified patient and adds a new test result to the patient
+    record
+
+    The function calls another function that finds the specified patient and
+    returns the tests dictionary for that patient if the patient exists.
+    If the patient does not exist, a status code of 400 is returned and this
+    function returns the error message and status code.  It the patient did
+    exist, the function checks to see if the test_name already exists as a key
+    in the "tests" dictionary.  If so, it appends the sent test_result to the
+    list associated with the key.  If not, a new key is created using the test
+    name and a new list with the single result is created.  The function then
+    return a success message and a status code of 200.
+
+    Args:
+        in_data (dict): contains the patient id, the name of the test to add,
+            and the test result.
+
+    Returns:
+        str, int: a successs or error message, status code
+
+    """
+    tests, status_code = get_patient_tests_from_database(in_data["id"])
+    if status_code == 400:
+        return tests, status_code
+    test_name = in_data["test_name"]
+    if test_name in tests:
+        tests[test_name].append(in_data["test_result"])
+    else:
+        tests[test_name] = [in_data["test_result"]]
+    return "Test added", 200
 
 
 if __name__ == '__main__':
