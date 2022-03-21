@@ -1,11 +1,17 @@
 import logging
 from flask import Flask, request, jsonify
+from pymodm import MongoModel, fields, connect
+from pymodm import errors as pymodm_errors
 
 # Define variable to contain Flask class for server
 app = Flask(__name__)
 
-# Create list for database to contain patient data
-db = []
+
+class Patient(MongoModel):
+    name = fields.CharField()
+    patient_id = fields.IntegerField(primary_key=True)
+    blood_type = fields.CharField()
+    tests = fields.DictField()
 
 
 def init_server():
@@ -21,10 +27,14 @@ def init_server():
     Note:  As currently written, this function does not need a unit test as
     it does not do any data manipulation itself.
     """
-    add_patient_to_db("Ann Ables", 101, "A+")
-    add_patient_to_db("Bob Boyles", 202, "B-")
     logging.basicConfig(filename="health_db_server.log", level=logging.DEBUG,
                         filemode='w')
+    print("Connecting to database...")
+    connect("mongodb+srv://bme547classwork:eWH0JChdPtXFUWFq@bme547."
+            "fe1jz.mongodb.net/health_db?retryWrites=true&w=majority")
+    print("Connection attempt finished")
+    add_patient_to_db("Ann Ables", 101, "A+")
+    add_patient_to_db("Bob Boyles", 202, "B-")
 
 
 @app.route("/new_patient", methods=["POST"])
@@ -91,7 +101,6 @@ def new_patient_driver(in_data):
     if status_code != 200:
         return answer, status_code
     add_patient_to_db(in_data["name"], in_data["id"], in_data["blood_type"])
-    print(db)
     return True, 200
 
 
@@ -159,7 +168,10 @@ def add_patient_to_db(patient_name, id_no, blood_type):
 
     new_patient = {"name": patient_name, "id": id_no,
                    "blood_type": blood_type, "tests": {}}
-    db.append(new_patient)
+    new_patient = Patient(name=patient_name,
+                          patient_id = id_no,
+                          blood_type = blood_type)
+    new_patient.save()
     return True
 
 
@@ -246,10 +258,18 @@ def get_patient_tests_from_database(patient_id):
         found, otherwise an error string; status code
 
     """
-    for patient in db:
-        if patient["id"] == int(patient_id):
-            return patient["tests"], 200
-    return "Patient_id {} was not found".format(patient_id), 400
+    try:
+        patient = Patient.objects.raw({"_id": patient_id}).first()
+    except pymodm_errors.DoesNotExist:
+        return "Patient_id {} was not found".format(patient_id), 400
+    return patient.tests, 200
+
+
+
+    # for patient in Patient.objects.raw({}):
+    #     if patient.patient_id == int(patient_id):
+    #         return patient.tests, 200
+    # return "Patient_id {} was not found".format(patient_id), 400
 
 
 @app.route("/add_test", methods=["POST"])
