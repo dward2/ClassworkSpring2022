@@ -3,3 +3,5 @@ pytest-pycodestyle
 requests
 coverage
 flask
+pymodm
+dnspython
