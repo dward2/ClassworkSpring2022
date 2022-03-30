@@ -5,3 +5,4 @@ coverage
 flask
 pymodm
 dnspython
+Pillow
